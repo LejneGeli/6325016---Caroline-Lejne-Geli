@@ -311,6 +311,20 @@ mailing list</a> or try the <a href="http://irc.nginx.org/">IRC channel</a>.</p>
 - ✅ HTML do nginx recebido com sucesso
 - ✅ Load balancing funcionando (requisição roteada para uma das 4 réplicas)
 
+#### **Evidência 3: Docker Desktop - Containers em Execução**
+
+A imagem abaixo mostra o Docker Desktop com 5 containers do serviço `web-escalavel` em execução, demonstrando visualmente a orquestração dos containers no Swarm:
+
+![Docker Desktop - Containers Swarm](docker-swarm-evidence.png)
+
+**Análise Visual:**
+- ✅ Docker Desktop mostrando 5 containers rodando
+- ✅ Todos os containers com status `Running` (verde)
+- ✅ Imagem utilizada: `nginx:alpine`
+- ✅ Containers nomeados automaticamente pelo Swarm (web-escalavel.1 até web-escalavel.5)
+- ✅ CPU e memória sendo utilizados conforme esperado
+- ✅ Terminal mostrando os comandos executados e progresso das tarefas
+
 ---
 
 ### Passo 4: Escalabilidade
