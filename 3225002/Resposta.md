@@ -75,6 +75,8 @@ docker service scale web-escalavel=5
 
 ## Tarefa Prática Integrada
 
+> Todos os comandos abaixo foram executados em um ambiente Docker Desktop (Windows + WSL2), simulando um cluster de nó único. Cada print mostra o comando e sua respectiva saída.
+
 ### Passo 1 — Inicialização do Cluster
 
 **Comandos executados:**
@@ -84,23 +86,11 @@ docker swarm leave --force
 docker swarm init
 ```
 
-**Saída:**
+**Print da execução:**
 
-```
-=== PASSO 1.1: Tentativa de limpeza ===
-Error response from daemon: This node is not part of a swarm
+![Print Passo 1 - Inicialização do Swarm](prints/evidencia_passo1_init.png)
 
-=== PASSO 1.2: Inicialização do Swarm ===
-Swarm initialized: current node (wwsb6cgxwyty1cju6l1bummta) is now a manager.
-
-To add a worker to this swarm, run the following command:
-
-    docker swarm join --token SWMTKN-1-41coedw0y1smnkkz3g1tisjimfku7skmuhe0v0ooyk1r1vat4g-1cjm5g7rq1yrjz9j5p02hm5xe 192.168.65.3:2377
-
-To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
-```
-
-> Observação: o comando `docker swarm leave --force` retornou erro porque ainda não havia swarm ativo — comportamento esperado em um ambiente limpo.
+> Observação: o comando `docker swarm leave --force` retornou erro porque ainda não havia swarm ativo — comportamento esperado em um ambiente limpo. Em seguida, o `docker swarm init` inicializou o cluster com sucesso, transformando este host no nó **Manager**.
 
 ---
 
@@ -112,13 +102,11 @@ To add a manager to this swarm, run 'docker swarm join-token manager' and follow
 docker service create --name app-stack-tf9 --replicas 4 --publish 8001:80 nginx:alpine
 ```
 
-**Saída:**
+**Print da execução:**
 
-```
-fog42wpi0y3tqfbd1963bv4ap
-overall progress: 4 out of 4 tasks
-verify: Service fog42wpi0y3tqfbd1963bv4ap converged
-```
+![Print Passo 2 - Deploy do Service](prints/evidencia_passo2_create.png)
+
+> O service convergiu com sucesso (`Service converged`), confirmando que as 4 réplicas foram criadas e estão estáveis.
 
 ---
 
@@ -126,83 +114,34 @@ verify: Service fog42wpi0y3tqfbd1963bv4ap converged
 
 #### Evidência 1 — Status das 4 réplicas
 
-**Comando executado:**
+**Comandos executados:**
 
 ```bash
 docker service ls
 docker service ps app-stack-tf9
 ```
 
-**Saída:**
+**Print da execução:**
 
-```
-ID             NAME            MODE         REPLICAS   IMAGE          PORTS
-fog42wpi0y3t   app-stack-tf9   replicated   4/4        nginx:alpine   *:8001->80/tcp
+![Evidência 1 - Status das 4 réplicas](prints/evidencia1_status_replicas.png)
 
-ID             NAME              IMAGE          NODE             DESIRED STATE   CURRENT STATE           ERROR     PORTS
-uvl78vbk8gft   app-stack-tf9.1   nginx:alpine   docker-desktop   Running         Running 2 minutes ago
-l2g6nth99tpa   app-stack-tf9.2   nginx:alpine   docker-desktop   Running         Running 2 minutes ago
-9ho3ot9r4w4l   app-stack-tf9.3   nginx:alpine   docker-desktop   Running         Running 2 minutes ago
-s84slq8tg0dc   app-stack-tf9.4   nginx:alpine   docker-desktop   Running         Running 2 minutes ago
-```
+✅ As 4 réplicas estão `Running` no node `docker-desktop`, e o service está com `4/4` réplicas ativas, mapeando a porta `8001` do host para a porta `80` do container.
 
-✅ **As 4 réplicas estão `Running` e o service está com `4/4`.**
+---
 
 #### Evidência 2 — Acesso externo via curl
 
 **Comando executado:**
 
 ```bash
-curl localhost:8001
+curl -i localhost:8001
 ```
 
-**Saída (HTML do nginx):**
+**Print da execução:**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Welcome to nginx!</title>
-<style>
-html { color-scheme: light dark; }
-body { width: 35em; margin: 0 auto;
-font-family: Tahoma, Verdana, Arial, sans-serif; }
-</style>
-</head>
-<body>
-<h1>Welcome to nginx!</h1>
-<p>If you see this page, nginx is successfully installed and working.
-Further configuration is required for the web server, reverse proxy,
-API gateway, load balancer, content cache, or other features.</p>
+![Evidência 2 - curl localhost:8001](prints/evidencia2_curl.png)
 
-<p>For online documentation and support please refer to
-<a href="https://nginx.org/">nginx.org</a>.<br/>
-To engage with the community please visit
-<a href="https://community.nginx.org/">community.nginx.org</a>.<br/>
-For enterprise grade support, professional services, additional
-security features and capabilities please refer to
-<a href="https://f5.com/nginx">f5.com/nginx</a>.</p>
-
-<p><em>Thank you for using nginx.</em></p>
-</body>
-</html>
-```
-
-**Headers HTTP da resposta:**
-
-```
-HTTP/1.1 200 OK
-Server: nginx/1.29.8
-Date: Mon, 27 Apr 2026 23:30:13 GMT
-Content-Type: text/html
-Content-Length: 896
-Last-Modified: Tue, 07 Apr 2026 12:09:53 GMT
-Connection: keep-alive
-ETag: "69d4f411-380"
-Accept-Ranges: bytes
-```
-
-✅ **A aplicação respondeu com HTTP 200 OK servindo a página padrão do nginx.**
+✅ A aplicação respondeu com **HTTP 200 OK** servindo a página padrão do nginx (`Welcome to nginx!`), comprovando que o service está funcional e acessível externamente.
 
 ---
 
@@ -214,25 +153,11 @@ Accept-Ranges: bytes
 docker service scale app-stack-tf9=1
 ```
 
-**Saída:**
+**Print da execução:**
 
-```
-app-stack-tf9 scaled to 1
-overall progress: 1 out of 1 tasks
-verify: Service app-stack-tf9 converged
-```
+![Print Passo 4 - Scale 4 → 1](prints/evidencia_passo4_scale.png)
 
-**Status após escalar:**
-
-```
-ID             NAME            MODE         REPLICAS   IMAGE          PORTS
-fog42wpi0y3t   app-stack-tf9   replicated   1/1        nginx:alpine   *:8001->80/tcp
-
-ID             NAME              IMAGE          NODE             DESIRED STATE   CURRENT STATE           ERROR     PORTS
-uvl78vbk8gft   app-stack-tf9.1   nginx:alpine   docker-desktop   Running         Running 2 minutes ago
-```
-
-✅ **O service foi reduzido para `1/1` réplica com sucesso.**
+✅ O service foi reduzido para `1/1` réplica com sucesso. O Swarm removeu 3 das 4 réplicas, mantendo apenas uma ativa.
 
 ---
 
@@ -245,17 +170,8 @@ docker service rm app-stack-tf9
 docker swarm leave --force
 ```
 
-**Saída:**
+**Print da execução:**
 
-```
-=== PASSO 5.1: Remover service ===
-app-stack-tf9
+![Print Passo 5 - Limpeza Final](prints/evidencia_passo5_cleanup.png)
 
-=== PASSO 5.2: Sair do swarm ===
-Node left the swarm.
-
-=== Confirmação: swarm inativo ===
- Swarm: inactive
-```
-
-✅ **Service removido e nó saiu do swarm. Ambiente limpo.**
+✅ Service removido (`app-stack-tf9`) e nó saiu do swarm (`Node left the swarm.`). Ambiente totalmente limpo.
